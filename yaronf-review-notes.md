@@ -501,6 +501,64 @@ The file also does not validate a handshake message at its root. The root schema
 
 ---
 
+## Drop transport negotiation from the handshake, or define a switch it can actually perform
+
+**Where:** [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ClientHello.transports_supported` (array of `http` | `https` | `stdio`) and `ServerHello.selected_transport` (one of those strings); `docs/spec/instrument/specification.md` §4 and §13 (`system/ping` "MAY use it to renegotiate transport")
+
+**Notes:** `selected_transport` is one value, which is the only shape a selection can have. The plural sits on the other side: `transports_supported` is an array, and the §4 diagram says the client offers "transports." The schema has no description on `selected_transport` itself. The enum lists the three legal names; it is not a multi-value result.
+
+The negotiation still does not do anything. `handshake/hello` is already a request on a concrete transport: an HTTP POST or a stdio write. TLS, or its absence, was settled when that connection opened. A stdio channel and an HTTP endpoint are different process topologies, and the ServerHello carries no address, port, or command for the one it names. Nothing says what the Observed Agent does when `selected_transport` differs from the transport the hello arrived on, or that the value must be a member of `transports_supported`. §13 says a failed `system/ping` MAY cause the agent to "renegotiate transport," and then defers `system/handshake_renegotiate` to v0.2. The reference Guardian writes `selected_transport: "http"` without reading the ClientHello, and the reference host never reads the field back. Either delete both fields in v0.1, or specify the switch: which endpoint, when subsequent hooks move, and what a mismatch with the current connection means.
+
+---
+
+## Define the ServerHello fields the §4 list only names
+
+**Where:** `docs/spec/instrument/specification.md` §4, the ServerHello field list; [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `$defs/ServerHello`
+
+**Notes:** That sentence is an inventory, not a set of forward references. Later prose defines `on_decision_failure` (§4.1, §6.4), `skew_window_ms` (§10.3), `profiles_accepted` (Conformance), and, thinly, `timeout_config` (the negotiated timeout in §6.4 and §12; the `default_ms` / `per_method_ms` shape is schema-only), `policy_requires_provenance` (the next paragraph of §4), `agbom_serializations_supported` (one sentence in the Inspect README), and `trace_emission` (one sentence on the OTel page, about the collector endpoint only). `negotiated_version` is the version-mismatch sentence plus the schema. `signature_algorithms_supported` is not named again; §10.1 says the handshake declares algorithms and then defines the registry, while the schema says an empty array means signatures are not required. `methods_evaluated` and `approver_types_supported` appear in the docs only in that list; their behavior is a schema description, and §9.2 says ASK capability is not on the wire. `selected_transport` has no description at all. The schema's `trace_emission` descriptions cite "Section 3.15", which this specification does not contain. Give each field a normative sentence, or stop listing it. Related, not the same ask: [#15](https://github.com/GenAI-Security-Project/agent-control-standard/issues/15) (how profiles, methods, and signature algorithms resolve).
+
+---
+
+## A Guardian cannot attach to a session; the Observed Agent is the only caller
+
+**Where:** `docs/spec/instrument/specification.md` §4.1: "Whether a Guardian can attach mid-flight to a session that started unguarded is undefined in v0.1"
+
+**Notes:** The sentence gives the Guardian an action the protocol does not have. Every ACS message in v0.1 is a request the Observed Agent sends: ClientHello, hooks, `system/ping`. The Guardian answers. There is no Guardian-initiated call, and v0.1 has no notifications, so a Guardian that was down when the session started has nothing to send into that session. The same paragraph already has the Observed Agent as the actor ("SHOULD retry the handshake for subsequent sessions"). The deferred `system/handshake_renegotiate` is also a `system/*` method, which the Observed Agent would send. Say whether the Observed Agent may begin a handshake for a `session_id` it already started unguarded, and what happens to the actions it took before that hello. Do not leave "the Guardian attaches" as an undefined capability.
+
+---
+
+## Make the §5 hook table and the Hooks page say the same thing about decisions
+
+**Where:** `docs/spec/instrument/specification.md` §5 Hook Taxonomy; `docs/spec/instrument/hooks.md` Overview table and each hook's **Decision** line
+
+**Notes:** The 19 `steps/*` names and their order match. The decision story does not. §5 writes "decision-eligible" on only three rows (`preCompact`, `skillRegister`, `skillLoad`) and says nothing about the other sixteen. The Hooks overview has a Decision-eligible column: Yes for those three and for `sessionStart`, `agentTrigger`, `turnStart`, `userMessage`, `agentResponse`, `knowledgeRetrieval`, `memoryContextRetrieval`, `memoryStore`, `toolCallRequest`, `toolCallResult`, and `subagentStart`; No for `postCompact`, `subagentStop`, `skillUnload`, `turnEnd`, and `sessionEnd`. A reader of §5 cannot tell an unmarked hook from an audit-only one. The Hooks page then disagrees with itself on `postCompact`: the overview says not decision-eligible, and the hook body says the Guardian MAY return MODIFY and MAY NOT return DENY. One catalog should state the legal dispositions per hook. Related, not the same ask: [#146](https://github.com/GenAI-Security-Project/agent-control-standard/issues/146) (the phrase "not decision-eligible" means two things, and `subagentStop` disagrees between schema and `hooks.md`), [#148](https://github.com/GenAI-Security-Project/agent-control-standard/issues/148) (schemas leave eligibility blank for most hooks). §5 is a third surface neither issue cites.
+
+---
+
+## Tag natural-language inputs and displayed text with a language
+
+**Where:** `steps/userMessage` and `steps/agentResponse` content parts (`value` with `type: text`); `Intent.raw` on `sessionStart` / `agentTrigger`; `toolCallRequest` natural-language framing; retrieval, memory, and compaction summary text; response `reasoning` ([`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json)); ASK `question`, `context`, and `options` ([`ask-details.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/ask-details.json))
+
+**Notes:** These fields are bare strings. No schema carries a language tag. That matters in two directions. On the way in, several of the strings are what a policy or an intent parser decides on: user text, `Intent.raw`, a tool-call rationale, retrieved or remembered text. An untagged string is read as whichever language the rule was written in. A faux ami then either trips a deny-word that is ordinary speech in the speaker's language, or hides the same instruction because the keyword list is in another language. On the way out, `reasoning` is specified as the human-renderable explanation for end-user display, and an ASK's `question` and `context` are what an approver reads. A display that does not know the language cannot choose the right rendering, and an approver can misread the question the same way. Use a BCP 47 tag (RFC 5646) on those natural-language values, per content part where a message can mix languages, and the same tag on `reasoning` and the ASK prompt. Identifiers, enums, and hashes do not need one.
+
+---
+
+## Let a DENY omit reasoning when the policy must stay confidential
+
+**Where:** `docs/spec/instrument/specification.md` §6, DENY required fields; [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) (`reasoning` required when `decision` is `deny`, and also when it is `modify`, `ask`, or `defer`)
+
+**Notes:** The prose and the schema both require `reasoning` on DENY, and the schema description says the operator or end user needs that explanation. The same response is what the Observed Agent receives. A deployment that treats the policy as confidential does not want a human-readable account of why the action was blocked delivered to the party being controlled: the text is a map of the boundary, and an attacker who can induce actions can read it back. `reason_codes` and `policy_references` are optional, so those can be left off; `reasoning` cannot. Omitting the field is invalid. A conformant DENY needs a way to carry no explanation, with the audit record kept on a channel the agent does not see. The same pressure applies to MODIFY, ASK, and DEFER, which require `reasoning` too.
+
+---
+
+## Say what the Observed Agent does with a DEFER
+
+**Where:** `docs/spec/instrument/specification.md` §6 (DEFER "pauses the step until it resolves") and §9.2; [`defer-details.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/defer-details.json)
+
+**Notes:** ASK names an approver and a question. DEFER tells the Observed Agent to pause and gives it `reason`, `resolution_method` (`additional_context`, `human_approval`, `timeout`), `resolution_timeout_ms`, `timeout_decision`, and optional `required_context`. The JSON-RPC response is already finished, and v0.1 has no notification the Guardian can send later, so nothing in that payload is a next step. `required_context` names inputs and does not say where they go. `resolution_method: human_approval` is an ASK with no `ask_details`: no approver and no question. `timeout_decision: ask` tells the agent to ask and includes neither. §9.2 uses DEFER as the substitute when the client cannot ASK, and says the block might clear through retry, an out-of-band escalation, or a later state change, still without a step. Cascading deferrals "MUST be bounded" per session, and no bound is given. Related, to link: [#14](https://github.com/GenAI-Security-Project/agent-control-standard/issues/14) (no resolution method, no correlation id, block vs retry vs give up, and `timeout_decision: ask` for a client that cannot ASK).
+
+---
+
 ## (Title of next comment)
 
 **Where:**
