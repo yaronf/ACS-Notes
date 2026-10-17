@@ -459,6 +459,48 @@ Related (not a full duplicate): [#32](https://github.com/GenAI-Security-Project/
 
 ---
 
+## Say the LLM must not emit hooks, not "the agent"
+
+**Where:** `docs/spec/instrument/specification.md` §1 principle 2: "The agent MUST NOT have knowledge of hooks."
+
+**Notes:** The sentence fights the rest of the spec. §2 defines the Observed Agent as the party that implements ACS endpoints and sends hook traffic, and §6.4 requires it to wait for and apply ALLOW, DENY, MODIFY, ASK, and DEFER. Something in that runtime has to know the hooks exist, or an ASK or MODIFY response has nowhere to land. The following sentence is the real rule: provenance is populated outside the LLM's output path. Rewrite the principle as "the model MUST NOT emit or observe hook traffic; the framework does." Do not use "agent" for both the harness and the model in the same principle list.
+
+---
+
+## Move the Instrument "design principles" to ACS-wide scope
+
+**Where:** `docs/spec/instrument/specification.md` §1 Design Principles
+
+**Notes:** The section sits under the Instrument specification, but the four principles are not about interception and enforcement. (1) is the whole-spec contract-versus-implementation split. (2) and (3) are provenance and trust classification, which the same page treats as a cross-cutting profile. (4) is explicitly about all three pillars and tiered conformance. A reader of Instrument does not get principles for hooks, dispositions, or the Guardian decision path. Put ACS-wide principles with the spec introduction, and if Instrument keeps a principles list, make it about the control loop.
+
+---
+
+## The Observed Agent calls the Guardian; it does not implement ACS endpoints
+
+**Where:** `docs/spec/instrument/specification.md` §2: "Observed Agent … Implements ACS endpoints (or the stdio analog) and sends hook traffic to the Guardian."
+
+**Notes:** The same section's flow has the Observed Agent HTTP POST or stdio-write the hook and wait for the response. Handshake names are ClientHello from the Observed Agent and ServerHello from the Guardian. The Guardian is the party that accepts the call. "Implements ACS endpoints" describes the server, and it contradicts the second half of the same sentence. Say the Observed Agent emits hook requests and applies the decision; the Guardian implements the ACS endpoint.
+
+---
+
+## Specify the Guardian's two-layer handoff, or stop describing one
+
+**Where:** `docs/spec/instrument/specification.md` §2 (chain config `*`, `on_ask`, pattern-based) and §12.1–12.2 (`delegate_to: "agent"`, intermediate output)
+
+**Notes:** The interaction is named twice and specified neither time, and the two accounts do not match. §2 says a chain config decides when the LLM layer runs. §12.1 says the deterministic engine returns an optional `delegate_to: "agent"`. There is no schema for the chain config, for `delegate_to`, or for the "intermediate output" the agent layer receives. Nothing says whether the agent layer's decision replaces the deterministic one, whether the deterministic layer can veto it, or what happens on agent-layer timeout besides "timeouts follow `timeout_config`." The agent layer is OPTIONAL, so a deterministic-only Guardian needs no handoff. A deployment that uses both needs the handoff written down.
+
+---
+
+## Replace the methods_implemented prefix pattern with a real method-name rule
+
+**Where:** [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ClientHello.methods_implemented` (`^(steps/|protocols/|agbom/|trace/|system/|handshake/|wrapped:).+`); the same pattern on `request-envelope.json` `method`; `ServerHello.methods_evaluated` has no pattern
+
+**Notes:** The pattern is valid ECMA-262 and every documented method (`steps/toolCallRequest`, `handshake/hello`, `agbom/snapshot`, `protocols/MCP/tools/call`, `wrapped:mcp-2025-06-18/tools/call`, …) matches it. It does not constrain method names. `.+` is any non-empty tail, so `steps/*`, `steps/notAHook`, `steps/toolCallRequest extra`, `trace/foo` (v0.1 defines no `trace/*` methods), and `wrapped:!!!` all validate. JSON Schema `pattern` is an unanchored search: this expression has `^` and no `$`, and the version patterns in the same file are end-anchored. In JavaScript, `steps/toolCallRequest\nignored` matches because the search succeeds on the first line. `methods_implemented` may also be empty or contain duplicates (`minItems` and `uniqueItems` are absent). `methods_evaluated` items are bare strings, so a ServerHello can name a method the ClientHello pattern would reject; `timeout_config.per_method_ms` keys are the same. The description says this list is how the Guardian knows which hooks to expect and which it can treat as not-emitted. The pattern cannot support that. Use one method-name grammar (known names, or a tight `namespace/Name` form plus the `wrapped:` form), end-anchor it, and apply it to `methods_implemented`, `methods_evaluated`, and the request `method`. Related, not the same ask: [#15](https://github.com/GenAI-Security-Project/agent-control-standard/issues/15) (how the two lists resolve), and the hook-negotiation note above.
+
+The file also does not validate a handshake message at its root. The root schema is `type: object` with no properties, so an empty object validates against the published URL, and `acs_schema.json`'s `$ref` to `handshake.json` (no fragment) does too. Only `#/$defs/ClientHello` and `#/$defs/ServerHello` are the message schemas. The request envelope's `payload` is an unconstrained object, so `handshake/hello` is not checked against `ClientHello`.
+
+---
+
 ## (Title of next comment)
 
 **Where:**
