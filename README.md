@@ -2,7 +2,7 @@
 
 Review comments on the Agent Control Standard documentation. The comments are in `yaronf-review-notes.md`.
 
-`upstream/` is a submodule: a pointer to the specification repository and one commit of it.
+`spec/` is a submodule: a pointer to the specification repository and one commit of it.
 
 https://github.com/GenAI-Security-Project/agent-control-standard
 
@@ -16,6 +16,6 @@ When the specification branch moves forward in a straight line, fast-forward the
 
 ```bash
 git submodule update --remote --merge
-git add upstream
-git commit -m "Fast-forward the upstream specification."
+git add spec
+git commit -m "Fast-forward the specification."
 ```

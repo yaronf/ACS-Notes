@@ -1,4 +1,4 @@
-[submodule "upstream"]
-	path = upstream
+[submodule "spec"]
+	path = spec
 	url = https://github.com/GenAI-Security-Project/agent-control-standard.git
 	branch = integration
