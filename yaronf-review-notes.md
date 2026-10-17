@@ -559,6 +559,30 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
+## Move the decision-failure rule out of "Honoring decisions" and finish it
+
+**Where:** `docs/spec/instrument/specification.md` §6.4 ("A step suffers a decision failure when no usable decision arrives"); the one-off receiver rules that sit beside it (§6.3 illegal `modifications`, §6.5 a `MODIFY` the client cannot apply, §17.1 recovery column)
+
+**Notes:** §6.4 is the attempt at one receiver rule. "No usable decision" covers silence, transport failure, a malformed response, and an error instead of a decision, and all of them take `on_decision_failure`. That is a protocol-failure rule, and it is filed under "Honoring decisions," whose job is what the Observed Agent does with a verdict that did arrive. The paragraph also stops short of the rule. It gives one posture for the step, default `proceed`, and does not give a code, a place to log, or a choice between denying the step and ending the session. "Record an audit event" does not say where: the SessionContext chain is the Guardian's, and the only deployment-local audit log in the spec is the one §4.1 uses when no Guardian answered. The neighboring sections then leave the paragraph. §6.3 fails closed on an illegal `modifications` object, which is the right outcome for that fault and a different outcome from §6.4's malformed response. §6.5 fails closed on a `MODIFY` the client cannot apply, except at `postCompact`. §17.1 gives each Guardian error a recovery sentence and never says whether the session continues. Lift §6.4 into its own protocol-failure section, and make the one-off sentences instances of it: classification including a code, where it is logged, and whether the step is denied or the session ends. Related, not the same ask: [#148](https://github.com/GenAI-Security-Project/agent-control-standard/issues/148) (what a runtime does with a disposition the hook does not allow).
+
+---
+
+## Say which postCompact field a MODIFY rewrites, and what the agent does with it
+
+**Where:** `docs/spec/instrument/specification.md` §6.5, the `postCompact` exception; `docs/spec/instrument/hooks.md` `postCompact`; [`hooks/post-compact.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/hooks/post-compact.json); [`modifications.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/modifications.json)
+
+**Notes:** Compaction has already replaced a span of context with `summary.value`. DENY cannot undo that, so the only remaining control is MODIFY, and the hook's example is "redact a region the policy can't compact." A client that cannot apply the MODIFY keeps the original summary. So the intended effect is: the Observed Agent replaces the summary now sitting in the context window. The modification object does not say that. `modified_content` is one string standing in for the whole payload, which is an object of summary, provenance, compacted entries, and chain hashes. `parameter_overrides` are tool-call arguments. A JSON-pointer redaction of `/summary/value` is the only shape that matches the example, and nothing names it. The rewritten text also has nowhere to go in provenance: `origin` MUST be `agent_generated` and `derived_from` MUST be the union of the compacted entries, both populated by the framework, and §6.3 defines no Guardian-injected origin. `post_compact_chain_hash` is already in the request, computed for the summary as submitted. Say that a `postCompact` MODIFY replaces `summary.value` in the context window, which provenance the replacement carries, and which of the two summaries the chain hash covers. Related, not the same ask: [#146](https://github.com/GenAI-Security-Project/agent-control-standard/issues/146) (the phrase "not decision-eligible" still allows this MODIFY).
+
+---
+
+## Schematize the SessionContext container as an extensible object
+
+**Where:** `docs/spec/instrument/specification.md` §8, the paragraph after the SessionContext member list
+
+**Notes:** §8 names the container (`session_id`, `chain_hash`, `entries`, `provenance_summary`, optional `intent`) and then says it is intentionally not schematized in v0.1: the children already have schemas, the container is server-side state, and cross-Guardian interoperability rides on the wire artifacts. JSON Schema already provides the mechanisms for an extensible object. Declare those members, `$ref` `ContextEntry` and `ProvenanceSummary` (and the shared Intent schema once that exists), and leave further members open with `additionalProperties` or `unevaluatedProperties`. This package already opens objects that way (`additionalProperties: true` on `platform_context`, `modifications`, and AgBOM component maps). ContextEntry, in the next subsection, is the same kind of server-side object and still has a schema: its description says storage is implementation-defined, and the schema constrains the canonical form used for hashing and audit export. That is the container's job too. The schema is what fixes `chain_hash` as the lowercase-hex head, `entries` as an array of ContextEntry, and `provenance_summary` as the existing summary, while a Guardian stays free to add fields and to store the object however it likes. The published `chain_hash` stays the wire commitment. Related, not the same ask: [#18](https://github.com/GenAI-Security-Project/agent-control-standard/issues/18) (no cross-Guardian verification protocol).
+
+---
+
 ## (Title of next comment)
 
 **Where:**
