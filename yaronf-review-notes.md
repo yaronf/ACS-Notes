@@ -123,9 +123,9 @@ Same Python snippet only branches on `DENY` and `MODIFY`. ACS dispositions also 
 
 ## Consider RFC 9493 Subject Identifiers instead of ad-hoc oauth_subject
 
-**Where:** `docs/concepts/identity.md` (and related identity type examples); Identity workstream descriptor schema
+**Where:** `docs/concepts/identity.md` (and related identity type examples); `docs/spec/instrument/specification.md` §11 (identity descriptor `type`: `posix_uid`, `windows_sid`, `oauth_subject`, `cert_subject`, …); Identity workstream descriptor schema
 
-**Notes:** SECEVENT published [RFC 9493](https://www.rfc-editor.org/rfc/rfc9493.html) (Subject Identifiers for Security Event Tokens): typed JSON subjects with a `format` discriminator (`iss_sub`, `email`, `uri`, `did`, `opaque`, …) and an IANA registry. `iss_sub` is a better stand-in for OAuth/OIDC principals than ACS's illustrative `oauth_subject` + bare `sub` (issuer+subject is what makes the id unique). Adopted mainly via OpenID Shared Signals / CAEP / RISC (e.g. Okta SSF); not a universal OAuth wire replacement yet. Worth aligning ACS identity descriptors with that registry (and using `uri`/`did` for SPIFFE/WIMSE) rather than growing a parallel type list.
+**Notes:** SECEVENT published [RFC 9493](https://www.rfc-editor.org/rfc/rfc9493.html) (Subject Identifiers for Security Event Tokens): typed JSON subjects with a `format` discriminator (`iss_sub`, `email`, `uri`, `did`, `opaque`, …) and an IANA registry. `iss_sub` is a better stand-in for OAuth/OIDC principals than ACS's illustrative `oauth_subject` + bare `sub` (issuer+subject is what makes the id unique). Adopted mainly via OpenID Shared Signals / CAEP / RISC (e.g. Okta SSF); not a universal OAuth wire replacement yet. Worth aligning ACS identity descriptors with that registry (and using `uri`/`did` for SPIFFE/WIMSE) rather than growing a parallel type list. §11 is that list in the specification: a `type` discriminator with `posix_uid`, `windows_sid`, `oauth_subject`, `cert_subject`, and an ellipsis, with the schema deferred to the Identity workstream. The same alignment applies there.
 
 ---
 
@@ -399,7 +399,7 @@ Related (not a full duplicate): [#32](https://github.com/GenAI-Security-Project/
 
 **Where:** §10 signature envelope `{ algorithm, value, key_id }`; hooks.md common-envelope example; `request-envelope.json` `Signature`
 
-**Notes:** Best practice is to bind algorithm to the key material looked up via `key_id` (and reject mismatches), not to take `algorithm` from the message as authoritative. Explicit wire `algorithm` invites algorithm-confusion / downgrade games (claim a weaker or wrong alg for the same key). Prefer `key_id` + `value` only, with alg (and hybrid composition) carried in the key descriptor; if `algorithm` stays for debugging, it MUST be ignored for verification except as a must-match check against the key. Hybrids already say `key_id` resolves to a descriptor that pins both keys — that is the right place for alg identity.
+**Notes:** Best practice is to bind algorithm to the key material looked up via `key_id` (and reject mismatches), not to take `algorithm` from the message as authoritative. Explicit wire `algorithm` invites algorithm-confusion / downgrade games (claim a weaker or wrong alg for the same key). Prefer `key_id` + `value` only, with alg (and hybrid composition) carried in the key descriptor; if `algorithm` stays for debugging, it MUST be ignored for verification except as a must-match check against the key. Hybrids already say `key_id` resolves to a descriptor that pins both keys — that is the right place for alg identity. Doing so does not damage the crypto agility §10.1 claims. That claim is the registry plus the handshake-negotiated set, and the migration sentence already says only that set shifts, with no wire-format change. A new algorithm is a new key descriptor and a new handshake entry; the per-message `algorithm` string is not what makes the envelope agile.
 
 ---
 
@@ -580,6 +580,70 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 **Where:** `docs/spec/instrument/specification.md` §8, the paragraph after the SessionContext member list
 
 **Notes:** §8 names the container (`session_id`, `chain_hash`, `entries`, `provenance_summary`, optional `intent`) and then says it is intentionally not schematized in v0.1: the children already have schemas, the container is server-side state, and cross-Guardian interoperability rides on the wire artifacts. JSON Schema already provides the mechanisms for an extensible object. Declare those members, `$ref` `ContextEntry` and `ProvenanceSummary` (and the shared Intent schema once that exists), and leave further members open with `additionalProperties` or `unevaluatedProperties`. This package already opens objects that way (`additionalProperties: true` on `platform_context`, `modifications`, and AgBOM component maps). ContextEntry, in the next subsection, is the same kind of server-side object and still has a schema: its description says storage is implementation-defined, and the schema constrains the canonical form used for hashing and audit export. That is the container's job too. The schema is what fixes `chain_hash` as the lowercase-hex head, `entries` as an array of ContextEntry, and `provenance_summary` as the existing summary, while a Guardian stays free to add fields and to store the object however it likes. The published `chain_hash` stays the wire commitment. Related, not the same ask: [#18](https://github.com/GenAI-Security-Project/agent-control-standard/issues/18) (no cross-Guardian verification protocol).
+
+---
+
+## Stop §10 from citing itself for the signed input
+
+**Where:** `docs/spec/instrument/specification.md` §10 opening sentence ("A signature over the §10 canonical input"); §10.2 ("the canonical input defined in §10")
+
+**Notes:** Editorial. Both sentences sit inside §10 and point at §10 for the bytes that get signed. The opening sentence is the first line of the section, so "the §10 canonical input" refers to the section the reader is already in. The definition is the unnumbered **Signed input** paragraph immediately below, which calls that byte string the "canonical form" and never gives it a number to cite. §10.2 then points back at "§10" for the same paragraph. Point both sentences at the Signed input paragraph, and use one name for it. The Conformance page's link to §10 is a real cross-reference and can stay. Related, not this wording: [#195](https://github.com/GenAI-Security-Project/agent-control-standard/issues/195) (REQUIRED in this sentence, "field-optional" in §10.1).
+
+---
+
+## Cite composite ML-DSA for hybrid signatures instead of defining the encoding
+
+**Where:** `docs/spec/instrument/specification.md` §10.2; the hybrid rows in the §10.1 registry (`ML-DSA-65+ECDSA-P256`, `ML-DSA-65+RSA-PSS-SHA256`); the same encoding copied into [`request-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/request-envelope.json) `Signature.algorithm`
+
+**Notes:** §10.2 defines cryptography. It specifies `len(pqc_sig) || pqc_sig || len(classical_sig) || classical_sig` with 4-byte big-endian lengths, base64 on the wire, and verification of both components over the §10 canonical input, for any algorithm of the form `<PQC>+<CLASSICAL>`. ACS should refer to [draft-ietf-lamps-pq-composite-sigs](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/) (Composite ML-DSA) and stop there. That draft serializes a signature as `mldsaSig || tradSig` with no length prefixes, because the ML-DSA component is fixed length, and it defines the message construction, the component algorithm pairs, and the rule that the composite fails if either component fails. The two registry names are not algorithms in that draft: the ML-DSA-65 / ECDSA P-256 composite is `id-MLDSA65-ECDSA-P256-SHA512`, and the ML-DSA-65 / RSA-PSS composites are SHA-512 with a fixed modulus size, not `ML-DSA-65+RSA-PSS-SHA256`. Use the draft's identifiers, and say the `value` field carries that composite signature. Delete the length-prefix rule and the "both components over the canonical input" rule from the prose and from the schema description. Related, not the same ask: [#17](https://github.com/GenAI-Security-Project/agent-control-standard/issues/17) (what a verifier does when one component fails). The draft already states that.
+
+---
+
+## Give the §10.3 opener a verb
+
+**Where:** `docs/spec/instrument/specification.md` §10.3, the first sentence
+
+**Notes:** Editorial. §10.3 opens with "`request_id` (UUID), `timestamp` (ISO 8601), and optional `nonce` (16–64 bytes)." That is a noun list. It names three envelope fields and their types and never says what the reader is to do with them. The requirements begin in the next sentence. Make the list a sentence: these fields are the replay inputs. Their types are already in [`request-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/request-envelope.json) (`request_id` as a UUID, `timestamp` as a date-time, `nonce` as a string of length 16–64).
+
+---
+
+## Tighten the recommended clock-skew window
+
+**Where:** `docs/spec/instrument/specification.md` §10.3 (`skew_window_ms`, RECOMMENDED default 300000); [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ServerHello.skew_window_ms` (`default: 300000`)
+
+**Notes:** 300000 ms is five minutes, and the check applies in both directions, so a request timestamp may be five minutes early or five minutes late. That is a large freshness bound for a signed request. NTP is ubiquitous in modern deployments, and the residual error on an NTP-synchronized host is seconds. The schema description already tells deployments with well-synchronized clocks to tighten the window, which treats the common case as the exception. Make the recommended default the NTP case. Related, not the same ask: [#140](https://github.com/GenAI-Security-Project/agent-control-standard/issues/140) (the reference Guardian does not enforce the window at all).
+
+---
+
+## State platform portability as a design goal, not a 2119 MUST
+
+**Where:** `docs/spec/instrument/specification.md` §11, the opening sentence ("ACS MUST be deployable across IDE, SaaS, on-prem on Linux/Windows/macOS/mobile/browser.")
+
+**Notes:** An RFC 2119 MUST is a requirement on an implementation of this specification. This sentence is a requirement on ACS itself, and on every future version of it: the protocol may not gain a feature that cannot run in an IDE, a SaaS deployment, on-prem, or on Linux, Windows, macOS, mobile, and browser. That is a design goal for the editors. A deployment of v0.1 cannot conform to it or violate it. State the portability goal in plain prose.
+
+---
+
+## Drop the requirement that every resource identifier is a URI
+
+**Where:** `docs/spec/instrument/specification.md` §11 ("Resource identifiers MUST use URI form"); the `resource` string on Intent capability tuples (`session-start.json`, `agent-trigger.json`, `subagent-start.json`, `ask-details.json`); the worked example in `docs/topics/ACS_in_action_example.md` (`email.send` with `resource: "manager@example.com"`)
+
+**Notes:** The bullet does not say which identifiers it governs, and a MUST that every resource an agent acts on is a URI is not realistic. The spec's own example uses `manager@example.com`, an address. Capability `resource` is an unconstrained string. Files and HTTP endpoints already have `file` and `https`. An editor selection, an unsaved buffer, a database row, a process, a registry key, a conversation, and an in-process function have no URI form in use. `posix:///` in the same bullet is not a registered URI scheme. Name the fields that are URIs, such as an Inspect `endpoint` or `path`, or drop the MUST. Related, not the same ask: [#295](https://github.com/GenAI-Security-Project/agent-control-standard/issues/295) (scope checks on the resolved form of an identifier).
+
+---
+
+## The agent-layer prompt treats all input as data
+
+**Where:** `docs/spec/instrument/specification.md` §12.2 ("Prompt MUST treat untrusted data as data, not instructions. Untrusted fields MUST be wrapped/quoted."); the §7.2 default that marks `user_input` and `system` trusted
+
+**Notes:** The bullet only demotes untrusted data. Under §7.2 that leaves `user_input` and `system` free to be read as instructions, and a deployment may mark still more origins trusted. Trust is a channel label. It is not permission to obey the text. A user message, the Observed Agent's system content, and a tool result are all input to this layer. The instructions are the layer's own prompt. Say that all input is data, and that every input field is wrapped or quoted, whatever `trust` says.
+
+---
+
+## Justify why the agent layer must not see policy code, or drop the rule
+
+**Where:** `docs/spec/instrument/specification.md` §12.2 ("MUST NOT have access to deterministic-layer policy code"); the same claim in §2 (the diagram sees "no policy code") and `README.md` ("that LLM never reads the policy source")
+
+**Notes:** The rule is stated three times and never justified. Nothing says what goes wrong if the agent layer can read the policy: leakage of a confidential rule, the model arguing with the rule, or something else. "Access" and "policy code" are also undefined. The source text, the compiled bundle, the one rule that fired, and a `policy_references` entry are different things, and a delegated decision may need the rule it is applying. The intermediate output is the only channel §12.2 gives the layer, so forbidding policy code may forbid putting that rule in the handoff. Say which harm the ban prevents and which artifacts it covers, or drop the MUST. The handoff itself is the separate note on §2 and §12.1–12.2.
 
 ---
 
