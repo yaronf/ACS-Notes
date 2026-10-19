@@ -705,6 +705,33 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
+## Ship an OPA/Rego binding in v0.1, or stop calling it the starting reference
+
+**Where:** `docs/spec/instrument/specification.md` §12.1 (OPA/Rego as "v0.1 starting reference"; the conventions sentence naming bundle layout and a baseline policy bundle) and §16 (v0.2 highlight "Cedar binding")
+
+**Notes:** §16 schedules a Cedar binding for v0.2. A binding is the mapping from the §12.1 interface onto one engine: the input document the engine evaluates, the result it returns, and the bundle that holds the policy.
+
+§12.1 names OPA/Rego as the v0.1 starting reference. That row is a status label. v0.1 contains no OPA/Rego binding. There is no Rego input document, no mapping from an OPA result onto the decision envelope, and no bundle layout. The same paragraph says ACS layers on a bundle layout and a baseline policy bundle. Neither is written down.
+
+The one-sentence interface is not that binding. It names the inputs, the request envelope, SessionContext, Intent, and provenance, and the output, a decision envelope plus an optional `delegate_to`. It does not say how those objects appear inside Rego. The worked example sets `evaluator_version` to `opa-0.65`. That names a binary. Write the OPA/Rego binding as a v0.1 artifact, the same kind of artifact §16 promises for Cedar, or drop "v0.1 starting reference." The agent-layer handoff is the separate note on §2 and §12.1–12.2. No open issue asks for the binding.
+
+---
+
+## Make the §17.1 error object agree in the prose, the table, and the schema
+
+**Where:** `docs/spec/instrument/specification.md` §17.1 (the opening paragraph and the registry table); [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) `$defs/JsonRpcError`
+
+**Notes:** An SDK that branches on a refusal has three accounts of the error object, and they disagree.
+
+* The prose puts a human-readable `message` inside `data`. The schema requires `message` on the error object, beside `code`, which is where JSON-RPC 2.0 puts it. The table names neither field.
+* The prose says `data`, when present, SHOULD carry a machine-readable `reason`. The table's machine-readable identifier is the Name column (`SESSION_REFUSED` and the rest). Only the `-32000` recovery tells the agent to read `data.reason`. The schema defines neither `reason` nor those names. `code` is an unconstrained integer.
+* The table's recovery reads per-code fields the schema does not define: `data.supported_versions` on `-32001`, `data.method` on `-32003`, and `data.skew_window_ms` on `-32006`. `data` is an empty schema, so any JSON value validates, and none of those fields is required. The prose calls `data` an object.
+* The `-32007` row says a deny exposes `reason_code: "chain_mismatch"`. §8.6 and the schema use `reason_codes`, an array. The schema lists `chain_mismatch` as one element of that array.
+
+The prose also says every mandated refusal maps to a fixed code. The same `-32007` row then allows a decision instead of an error. Pick one error object and write it in all three places. Keep the JSON-RPC `message` on the error object. Give `data` a schema for the fields the recovery column reads. Use `reason_codes` for the deny form of a chain mismatch. The decision-failure note already covers the recovery column's silence on whether the session continues. No open issue asks for these three surfaces to agree. Related, and about the reference Guardian's error behavior: [#163](https://github.com/GenAI-Security-Project/agent-control-standard/issues/163) and [#130](https://github.com/GenAI-Security-Project/agent-control-standard/issues/130).
+
+---
+
 ## (Title of next comment)
 
 **Where:**
