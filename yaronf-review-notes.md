@@ -647,6 +647,22 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
+## Use the JSON-RPC id as the step identifier
+
+**Where:** [`request-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/request-envelope.json) (`id` is a string or number; `params.request_id` is a separate UUID); [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) (echoed `id`, plus `result.request_id`); `docs/spec/instrument/specification.md` §10.3 (replay keys on `request_id`); [`context-entry.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/context-entry.json) (`request_hash` hashes `params`; `step_id` should equal `request_id`)
+
+**Notes:** Replay, the audit chain, and trace can all use one identifier. Constrain the JSON-RPC `id` to a UUID that is unique within the session, and use it as the step id. A duplicate `id` is `REPLAY_DETECTED`. `step_id`, `turn_id`, `request_id_ref`, and the trace joins copy that `id`. The signature already covers it, because §10 signs the whole envelope. Drop `params.request_id` and the copy on the result. One commitment moves. `request_hash` is the hash of `params` only, so today it includes `request_id`. After the move the content hash no longer includes the step identity. The chain entry still binds it: `step_id` is covered by `entry_hash`. Say that in the `request_hash` rule. No open issue asks for this.
+
+---
+
+## Give system/ping its own response subschema
+
+**Where:** [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) `result` `oneOf` (`AcsResult` or `ServerHello` only) and `AcsResult.payload` (an object with no properties; the description says `system/ping` returns `{ status, echo, server_timestamp }`); `docs/spec/instrument/specification.md` §13, the Response paragraph; [`hooks/system-ping.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/hooks/system-ping.json) (request `echo` only)
+
+**Notes:** `handshake/hello` has a named result shape, `ServerHello`. `system/ping`'s reply does not. §13 states it in prose: `decision: "allow"` and `payload` of `{ "status": "ok", "echo": "<request.echo>", "server_timestamp": "<iso-8601>" }`. The envelope description repeats that shape as an example, and `payload` accepts any object. Give the ping response its own subschema and refer to it from `result`, the way `ServerHello` is a branch of that `oneOf`. A ping result still carries `decision`, so the subschema is that payload on an `AcsResult`, with `status`, `echo`, and `server_timestamp` required as §13 describes them. Related, not the same ask: [#129](https://github.com/GenAI-Security-Project/agent-control-standard/issues/129) (the reference Guardian does not implement `system/ping`).
+
+---
+
 ## (Title of next comment)
 
 **Where:**
