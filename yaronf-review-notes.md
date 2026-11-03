@@ -1,7 +1,7 @@
 # Documentation review notes
 
 Working notes from reviewing the local docs preview (`http://127.0.0.1:8000/`).
-Each `##` heading is one comment; titles are issue-ready.
+Each `##` heading is one comment; titles are issue-ready. Each title ends with [Editorial] or [Technical]. Technical means the fix changes an implementation: a schema, a wire field, an algorithm, a default, or required behavior. A comment that can close either way is Technical.
 
 **Open-issue check:** Before keeping a comment, search open issues on [`GenAI-Security-Project/agent-control-standard`](https://github.com/GenAI-Security-Project/agent-control-standard/issues). Drop the comment if an open issue fully covers it (same ask). Related-but-narrower issues do not count as duplicates.
 
@@ -11,15 +11,15 @@ Checked against open issues (2026-10-08): no comment fully duplicates an open is
 
 Curated as we go; re-rank when a new finding outranks an entry below.
 
-1. [Define ACS scope and target audience across agent classes](#define-acs-scope-and-target-audience-across-agent-classes) — the standard never says who it is for.
-2. [Call the HMAC baseline a MAC, and justify why not ECDSA-P256](#call-the-hmac-baseline-a-mac-and-justify-why-not-ecdsa-p256) — the Core integrity floor is misnamed, and the choice of algorithm is unexplained.
-3. [Justify hook negotiation / out-of-band capability vs normative emit-when-applicable](#justify-hook-negotiation--out-of-band-capability-vs-normative-emit-when-applicable) — Core should not need an out-of-band table of which hooks are live.
-4. [Put MODIFY (and ASK) capability on the handshake wire](#put-modify-and-ask-capability-on-the-handshake-wire) — the same capability is left off the wire.
-5. [Clarify what control paradigms mean for implementers](#clarify-what-control-paradigms-mean-for-implementers) — IBAC, FIDES, CaMeL, and AARM read as a product matrix. They are optional citation styles.
+1. [Define ACS scope and target audience across agent classes](#define-acs-scope-and-target-audience-across-agent-classes-editorial) — the standard never says who it is for.
+2. [Call the HMAC baseline a MAC, and justify why not ECDSA-P256](#call-the-hmac-baseline-a-mac-and-justify-why-not-ecdsa-p256-technical) — the Core integrity floor is misnamed, and the choice of algorithm is unexplained.
+3. [Justify hook negotiation / out-of-band capability vs normative emit-when-applicable](#justify-hook-negotiation--out-of-band-capability-vs-normative-emit-when-applicable-technical) — Core should not need an out-of-band table of which hooks are live.
+4. [Put MODIFY (and ASK) capability on the handshake wire](#put-modify-and-ask-capability-on-the-handshake-wire-technical) — the same capability is left off the wire.
+5. [Clarify what control paradigms mean for implementers](#clarify-what-control-paradigms-mean-for-implementers-editorial) — IBAC, FIDES, CaMeL, and AARM read as a product matrix. They are optional citation styles.
 
 ---
 
-## Add A2A hook pages to the MkDocs nav
+## Add A2A hook pages to the MkDocs nav [Editorial]
 
 **Where:** `mkdocs.yml` nav; source pages under `docs/spec/instrument/a2a/hooks/`
 
@@ -35,7 +35,7 @@ Curated as we go; re-rank when a new finding outranks an entry below.
 
 ---
 
-## Rename the Instrument "ACS specification" nav label
+## Rename the Instrument "ACS specification" nav label [Editorial]
 
 **Where:** `mkdocs.yml` → Specification → Instrument → `ACS specification` (`spec/instrument/specification.md`)
 
@@ -43,7 +43,7 @@ Curated as we go; re-rank when a new finding outranks an entry below.
 
 ---
 
-## Define ACS scope and target audience across agent classes
+## Define ACS scope and target audience across agent classes [Editorial]
 
 **Where:** Top-level docs (landing / About / Topics intro); no explicit audience statement found
 
@@ -55,7 +55,7 @@ Mandatory ASK does not by itself make coding agents the audience. A Guardian MUS
 
 ---
 
-## Balance Inspect transparency against attacker reconnaissance
+## Balance Inspect transparency against attacker reconnaissance [Editorial]
 
 **Where:** `docs/README.md` — Trustworthy Agents blurb, Inspectable paragraph ("What are the services behind them, and which data they can access.")
 
@@ -63,7 +63,7 @@ Mandatory ASK does not by itself make coding agents the audience. A Guardian MUS
 
 ---
 
-## Call the HMAC baseline a MAC, and justify why not ECDSA-P256
+## Call the HMAC baseline a MAC, and justify why not ECDSA-P256 [Technical]
 
 **Where:** `docs/acs.md` ("baseline HMAC-SHA256 signature"); also `docs/spec/conformance.md`, `docs/spec/instrument/specification.md` §10 (registry correctly labels HMAC as "Symmetric MAC" but the surrounding prose still says "signature")
 
@@ -73,7 +73,7 @@ The mandatory algorithm is a separate question. ECDSA-P256 is the natural classi
 
 ---
 
-## Mention ECDSA-P256 in the ACS-Crypto overview blurb
+## Mention ECDSA-P256 in the ACS-Crypto overview blurb [Editorial]
 
 **Where:** `docs/acs.md` — ACS-Crypto profile bullet ("HMAC-SHA256 baseline, ML-DSA-65 / SLH-DSA-128s for PQC, hybrid composites…")
 
@@ -81,7 +81,7 @@ The mandatory algorithm is a separate question. ECDSA-P256 is the natural classi
 
 ---
 
-## Clarify how Runtime Hooks relate to ACSInstrument
+## Clarify how Runtime Hooks relate to ACSInstrument [Editorial]
 
 **Where:** `docs/acs.md` — Trustworthy agents are › Instrumentable › "Runtime Hooks" example (follows the earlier "Init agent with ACS" / `ACSInstrument` snippet)
 
@@ -91,7 +91,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Clarify that AgBOM serializations are not required to be signed
+## Clarify that AgBOM serializations are not required to be signed [Editorial]
 
 **Where:** Inspect definition — `docs/spec/inspect/README.md` (and related CycloneDX/SPDX/SWID extension pages)
 
@@ -99,7 +99,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Put MODIFY (and ASK) capability on the handshake wire
+## Put MODIFY (and ASK) capability on the handshake wire [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §6.5 (MODIFY-incapable clients); same pattern in §9.2 (approver-incapable clients); contrast §4 Capability Negotiation Handshake
 
@@ -107,7 +107,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Rename the Instrument pillar to name what it does
+## Rename the Instrument pillar to name what it does [Editorial]
 
 **Where:** Pillar naming across the docs (e.g. Instrument / Trace / Inspect); `docs/spec/instrument/`, nav, conformance, intros
 
@@ -115,7 +115,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Include SPIFFE (and future WIMSE) in identity type examples
+## Include SPIFFE (and future WIMSE) in identity type examples [Editorial]
 
 **Where:** `docs/concepts/identity.md`, `docs/topics/core_concepts.md`, `docs/spec/instrument/specification.md` §11 (identity descriptor `type` examples: `posix_uid`, `oauth_subject`, `cert_subject`, …)
 
@@ -123,7 +123,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Consider RFC 9493 Subject Identifiers instead of ad-hoc oauth_subject
+## Consider RFC 9493 Subject Identifiers instead of ad-hoc oauth_subject [Technical]
 
 **Where:** `docs/concepts/identity.md` (and related identity type examples); `docs/spec/instrument/specification.md` §11 (identity descriptor `type`: `posix_uid`, `windows_sid`, `oauth_subject`, `cert_subject`, …); Identity workstream descriptor schema
 
@@ -133,7 +133,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Identity "verified credential" claim has no ACS wire support (e.g. PoP)
+## Identity "verified credential" claim has no ACS wire support (e.g. PoP) [Technical]
 
 **Where:** `docs/concepts/identity.md` ("An asserted identity is weaker than one bound by a verified credential or signature"); related trust-basis language in `docs/topics/core_concepts.md`
 
@@ -141,7 +141,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## Replace leftover "ASOP" references with ACS
+## Replace leftover "ASOP" references with ACS [Editorial]
 
 **Where:** `docs/topics/core_concepts.md` diagram (`docs/assets/agent_env.png` — edge labeled ASOP between Observed Agent and Guardian); `docs/spec/instrument/a2a/extend_a2a.md` ("uses ASOP as a transport"); `docs/spec/trace/OCSF/implementation_examples.md` (`ASOP Security Layer`, `unmapped.asop.*`)
 
@@ -149,7 +149,7 @@ The Python example branches only on `DENY` and `MODIFY`. The dispositions also i
 
 ---
 
-## ACS-in-action sequence: DENY is legal at every allow, and AgBOM is mis-ordered
+## ACS-in-action sequence: DENY is legal at every allow, and AgBOM is mis-ordered [Editorial]
 
 **Where:** `docs/topics/ACS_in_action_example.md` — Sequence mermaid
 
@@ -167,7 +167,7 @@ The diagram also emits `agbom/snapshot` before `sessionStart`. The normative ord
 
 ---
 
-## Specify large-payload handling: stream, truncate, compress, or refuse — with an indicator
+## Specify large-payload handling: stream, truncate, compress, or refuse — with an indicator [Technical]
 
 **Where:** Wire format / Instrument — `docs/spec/instrument/specification.md` §3 (streaming deferred to v0.2), §4 `max_payload_size_bytes`; no truncation/compression fields found in schemas
 
@@ -179,7 +179,7 @@ In v0.1 the Guardian still needs its own receive limit, for example on ServerHel
 
 ---
 
-## Document authorization paradigms without forcing them into Concepts
+## Document authorization paradigms without forcing them into Concepts [Editorial]
 
 **Where:** IBAC/FIDES/CaMeL/AARM used across Instrument and Topics; no dedicated page. Concepts README altitude rule: cross-cutting → Concepts, mechanism → pillar
 
@@ -187,7 +187,7 @@ In v0.1 the Guardian still needs its own receive limit, for example on ServerHel
 
 ---
 
-## Stop restating structured decision fields in reasoning examples
+## Stop restating structured decision fields in reasoning examples [Editorial]
 
 **Where:** `docs/topics/ACS_in_action_example.md` (e.g. FIDES deny `reasoning`); also other paradigm examples there. Spec: `docs/spec/instrument/specification.md` §6.1
 
@@ -195,7 +195,7 @@ In v0.1 the Guardian still needs its own receive limit, for example on ServerHel
 
 ---
 
-## Clarify what control paradigms mean for implementers
+## Clarify what control paradigms mean for implementers [Editorial]
 
 **Where:** `docs/topics/ACS_in_action_example.md` — "What different paradigms cite"; also Instrument §6.2 (and whatever Instrument/Topics page eventually defines paradigms — not Concepts)
 
@@ -207,7 +207,7 @@ Lead with that story: an optional policy style, and cite what fired. Link the so
 
 ---
 
-## Show conventional authz in ACS-in-action, not only research paradigms
+## Show conventional authz in ACS-in-action, not only research paradigms [Editorial]
 
 **Where:** `docs/topics/ACS_in_action_example.md` — "What different paradigms cite" (IBAC, FIDES, CaMeL, AARM); contrast Instrument §12.1 (OPA/Rego as v0.1 reference, Cedar as v0.2)
 
@@ -215,7 +215,7 @@ Lead with that story: an optional policy style, and cite what fired. Link the so
 
 ---
 
-## Clarify whether Approver is optional and who resolves ASK
+## Clarify whether Approver is optional and who resolves ASK [Technical]
 
 **Where:** `docs/concepts/agents.md` (Approver); Instrument §9 / §9.2; ASK as Core MUST-support disposition
 
@@ -228,7 +228,7 @@ Say whether the Guardian MAY return `ask` with no designated Approver. Say who p
 
 ---
 
-## Rewrite the opaque "trust basis, not that it arrived" sentence
+## Rewrite the opaque "trust basis, not that it arrived" sentence [Editorial]
 
 **Where:** `docs/concepts/agents.md` — Trust between agents: "How much weight a given fact carries depends on its trust basis, not on the fact that it arrived."
 
@@ -236,7 +236,7 @@ Say whether the Guardian MAY return `ask` with no designated Approver. Say who p
 
 ---
 
-## Clarify Guardian identity vs the policy (and policy-author)
+## Clarify Guardian identity vs the policy (and policy-author) [Editorial]
 
 **Where:** `docs/concepts/identity.md` — "Guardian identity: which policy authority is deciding."; also `docs/topics/core_concepts.md`
 
@@ -244,7 +244,7 @@ Say whether the Guardian MAY return `ask` with no designated Approver. Say who p
 
 ---
 
-## Fix broken lead sentence on Identity overview
+## Fix broken lead sentence on Identity overview [Editorial]
 
 **Where:** `docs/identity/overview.md` — "There are 5 unique identity challenges that this standard aims to solve, where existing use cases that traditional identity models cannot support."
 
@@ -252,7 +252,7 @@ Say whether the Guardian MAY return `ask` with no designated Approver. Say who p
 
 ---
 
-## Drop the false "build-time vs execute-time supply chain" claim
+## Drop the false "build-time vs execute-time supply chain" claim [Editorial]
 
 **Where:** `docs/identity/overview.md` — "The supply chain you signed off on at build time is not the supply chain that executes."
 
@@ -260,7 +260,7 @@ Say whether the Guardian MAY return `ask` with no designated Approver. Say who p
 
 ---
 
-## Do not imply agentic identity stops the "valid token, bad outcome" failure class
+## Do not imply agentic identity stops the "valid token, bad outcome" failure class [Editorial]
 
 **Where:** `docs/identity/overview.md` — "Agent systems are introducing a new class of failures where every token is valid, every API call is authorized, and the outcome is still a security incident." (and the Unit 42 example that follows)
 
@@ -270,7 +270,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Restructure the five identity-challenges table for readability
+## Restructure the five identity-challenges table for readability [Editorial]
 
 **Where:** `docs/identity/overview.md` — "The 5 Unique Runtime Identity Challenges for Agents" table
 
@@ -278,7 +278,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Stop calling the identity challenges "unique"
+## Stop calling the identity challenges "unique" [Editorial]
 
 **Where:** `docs/identity/overview.md` — "5 Unique Runtime Identity Challenges" (heading and body); at least Over-Privilege and Token Theft Resistance are long-standing IAM problems
 
@@ -286,7 +286,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Separate chain-integrity forensics from chain-based policy enforcement
+## Separate chain-integrity forensics from chain-based policy enforcement [Editorial]
 
 **Where:** `docs/identity/overview.md` — Chain Integrity challenge (and related identity-standards prose)
 
@@ -294,7 +294,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Correct the false claim that API keys are always bearer secrets
+## Correct the false claim that API keys are always bearer secrets [Editorial]
 
 **Where:** `docs/identity/overview.md` — Token Theft Resistance row: "API keys are bearer secrets by definition."
 
@@ -302,7 +302,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Do not call GNAP and AMR "broadly adopted"
+## Do not call GNAP and AMR "broadly adopted" [Editorial]
 
 **Where:** `docs/identity/standards.md` — Existing Standards intro: "The following standards are broadly adopted…"
 
@@ -310,7 +310,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Do not claim token issuance cannot support per-action authz
+## Do not claim token issuance cannot support per-action authz [Editorial]
 
 **Where:** `docs/identity/standards.md` — Why OAuth Alone Doesn't Meet Agent Needs table: "No token-issuance standard can patch this; it requires inline behavioral verification at action time."
 
@@ -318,7 +318,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Short TTL alone is not enough for high-risk actions
+## Short TTL alone is not enough for high-risk actions [Technical]
 
 **Where:** `docs/identity/standards.md` — refresh-token mitigation row and Token lifetimes summary: proposed "60 s for high-risk actions"
 
@@ -326,7 +326,7 @@ The next two sentences do not follow. The runtime could not distinguish user int
 
 ---
 
-## Do not treat fail-open as an open peer option to OAuth/AIMS
+## Do not treat fail-open as an open peer option to OAuth/AIMS [Technical]
 
 **Where:** `docs/identity/standards.md` — IdP reachability row: "Neither OAuth nor AIMS specifies a failure-mode contract." → open work item "fail-closed vs. fail-cached vs. tier-dependent policy."
 
@@ -338,7 +338,7 @@ Related, and narrower: [#32](https://github.com/GenAI-Security-Project/agent-con
 
 ---
 
-## Immutable Intent needs a real integrity story, not only an invariant
+## Immutable Intent needs a real integrity story, not only an invariant [Technical]
 
 **Where:** `docs/concepts/intent.md`; `docs/spec/instrument/specification.md` §8.4; identity pages that cite "immutable intent"
 
@@ -348,7 +348,7 @@ The text does not say how Intent is sealed when it is established: who parses `r
 
 ---
 
-## Intent is on the wire; stop calling it "not a wire format"
+## Intent is on the wire; stop calling it "not a wire format" [Technical]
 
 **Where:** `docs/concepts/intent.md` opener ("Intent is a governance concept, not a wire format"); hook schemas that embed Intent (`session-start.json`, `agent-trigger.json`, `subagent-start.json`); §8.4
 
@@ -356,7 +356,7 @@ The text does not say how Intent is sealed when it is established: who parses `r
 
 ---
 
-## Document goal→capability derivation for Intent.parsed
+## Document goal→capability derivation for Intent.parsed [Technical]
 
 **Where:** `docs/concepts/intent.md` (`Intent.parsed` = "the set of things the agent is permitted to do"); also `docs/topics/ACS_in_action_example.md` (example Intent `["summarize Project X"]` vs schema capability tuples)
 
@@ -364,7 +364,7 @@ The text does not say how Intent is sealed when it is established: who parses `r
 
 ---
 
-## Define a capability registry (or admit policy is deployment-local)
+## Define a capability registry (or admit policy is deployment-local) [Technical]
 
 **Where:** `docs/concepts/capability.md`; §11 ("Capability vocabulary uses abstract names…"); AgBOM / `tool-call-request.json` (`capability` as free string with examples)
 
@@ -374,7 +374,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Untangle Capability vs agent_capability in the concepts glossary
+## Untangle Capability vs agent_capability in the concepts glossary [Technical]
 
 **Where:** `docs/concepts/skill.md` ("A skill differs from an `agent_capability`…"); `docs/concepts/capability.md`; concepts README
 
@@ -387,7 +387,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Rewrite "trust launder" jargon in Provenance/Trust openers
+## Rewrite "trust launder" jargon in Provenance/Trust openers [Editorial]
 
 **Where:** `docs/concepts/provenance.md` opener ("lets trust launder silently"); also `docs/concepts/trust.md` ("trust laundering up the spectrum")
 
@@ -395,7 +395,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Separate channel/metadata integrity from content trust on the Trust Basis spectrum
+## Separate channel/metadata integrity from content trust on the Trust Basis spectrum [Editorial]
 
 **Where:** `docs/concepts/trust.md` — spectrum ("Each rung is a stronger ground for reliance")
 
@@ -403,7 +403,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Clarify that profile "layers" are declared, not proven
+## Clarify that profile "layers" are declared, not proven [Editorial]
 
 **Where:** `docs/spec/conformance.md` — diagram intro: "Each layer is a self-declared claim from the handshake, not a verified fact."
 
@@ -411,7 +411,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Call the wire a JSON-RPC 2.0 profile — there are no real JSON-RPC extensions
+## Call the wire a JSON-RPC 2.0 profile — there are no real JSON-RPC extensions [Editorial]
 
 **Where:** `docs/spec/conformance.md` / §3 ("JSON-RPC 2.0 with ACS extensions"); `request-envelope.json` / `response-envelope.json` descriptions
 
@@ -421,7 +421,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Justify hook negotiation / out-of-band capability vs normative emit-when-applicable
+## Justify hook negotiation / out-of-band capability vs normative emit-when-applicable [Technical]
 
 **Where:** `docs/spec/conformance.md` (Guardian determines subagent-emission capability out-of-band); §4 `methods_implemented` / `methods_evaluated`; similar ASK/MODIFY "deployment-defined means" precedents
 
@@ -431,7 +431,7 @@ The shapes also drift. Concepts and examples use capability identifiers. The `In
 
 ---
 
-## Derive signature algorithm from the key, do not trust wire `algorithm`
+## Derive signature algorithm from the key, do not trust wire `algorithm` [Technical]
 
 **Where:** §10 signature envelope `{ algorithm, value, key_id }`; hooks.md common-envelope example; `request-envelope.json` `Signature`
 
@@ -443,7 +443,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## Say what agentTrigger MODIFY rewrites — not vague "before activation"
+## Say what agentTrigger MODIFY rewrites — not vague "before activation" [Technical]
 
 **Where:** `docs/spec/instrument/hooks.md` — agentTrigger: "Guardian MAY rewrite the trigger payload (e.g. redact PII) before activation."
 
@@ -451,7 +451,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## Make modified_content a structured payload replacement, not a string
+## Make modified_content a structured payload replacement, not a string [Technical]
 
 **Where:** `specification/v0.1.0/modifications.json` (`modified_content: string`); §6.3 ("opaque replacement string")
 
@@ -459,7 +459,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## Specify a core subset of tool-call actions, extensible later
+## Specify a core subset of tool-call actions, extensible later [Technical]
 
 **Where:** `specification/v0.1.0/hooks/tool-call-request.json` (`tool.name`, optional `operation`, open `arguments`, optional `raw_command`); not the capability vocabulary
 
@@ -467,7 +467,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## preCompact DENY is not a durable policy once the window is full
+## preCompact DENY is not a durable policy once the window is full [Technical]
 
 **Where:** `docs/spec/instrument/hooks.md` — preCompact: Guardian MAY DENY compaction (e.g. until trusted re-grounding)
 
@@ -475,7 +475,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## Do not present "fabricate a chain hash" as an option
+## Do not present "fabricate a chain hash" as an option [Editorial]
 
 **Where:** §8.6; `docs/spec/instrument/hooks.md` subagentStop; `subagent-stop.json` — "omits the field rather than fabricate a value"
 
@@ -483,7 +483,7 @@ This does not damage the crypto agility §10.1 claims. That claim is the registr
 
 ---
 
-## Do not push skill vetting entirely outside ACS
+## Do not push skill vetting entirely outside ACS [Technical]
 
 **Where:** `docs/spec/instrument/hooks.md` skillRegister ("Marketplace pre-publication scanning and publisher reputation are out of scope"); `specification/proposals/skill-lifecycle/README.md` § Scope boundary ("the marketplace's job")
 
@@ -493,7 +493,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## Do not file Inspect methods under Instrument "Supported Hooks"
+## Do not file Inspect methods under Instrument "Supported Hooks" [Editorial]
 
 **Where:** `mkdocs.yml` — Specification → Instrument → Supported Hooks (`docs/spec/instrument/hooks.md`); the same page's `agbom/snapshot` and `agbom/changed` rows
 
@@ -501,7 +501,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## Say the LLM must not emit hooks, not "the agent"
+## Say the LLM must not emit hooks, not "the agent" [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §1 principle 2: "The agent MUST NOT have knowledge of hooks."
 
@@ -509,7 +509,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## Move the Instrument "design principles" to ACS-wide scope
+## Move the Instrument "design principles" to ACS-wide scope [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §1 Design Principles
 
@@ -517,7 +517,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## The Observed Agent calls the Guardian; it does not implement ACS endpoints
+## The Observed Agent calls the Guardian; it does not implement ACS endpoints [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §2: "Observed Agent … Implements ACS endpoints (or the stdio analog) and sends hook traffic to the Guardian."
 
@@ -525,7 +525,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## Specify the Guardian's two-layer handoff, or stop describing one
+## Specify the Guardian's two-layer handoff, or stop describing one [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §2 (chain config `*`, `on_ask`, pattern-based) and §12.1–12.2 (`delegate_to: "agent"`, intermediate output)
 
@@ -533,7 +533,7 @@ ACS does not have to run the scanner. It does need a place to carry a prior atte
 
 ---
 
-## Replace the methods_implemented prefix pattern with a real method-name rule
+## Replace the methods_implemented prefix pattern with a real method-name rule [Technical]
 
 **Where:** [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ClientHello.methods_implemented` (`^(steps/|protocols/|agbom/|trace/|system/|handshake/|wrapped:).+`); the same pattern on `request-envelope.json` `method`; `ServerHello.methods_evaluated` has no pattern
 
@@ -543,7 +543,7 @@ The file also does not validate a handshake message at its root. The root schema
 
 ---
 
-## Drop transport negotiation from the handshake, or define a switch it can actually perform
+## Drop transport negotiation from the handshake, or define a switch it can actually perform [Technical]
 
 **Where:** [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ClientHello.transports_supported` (array of `http` | `https` | `stdio`) and `ServerHello.selected_transport` (one of those strings); `docs/spec/instrument/specification.md` §4 and §13 (`system/ping` "MAY use it to renegotiate transport")
 
@@ -553,7 +553,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Define the ServerHello fields the §4 list only names
+## Define the ServerHello fields the §4 list only names [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §4, the ServerHello field list; [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `$defs/ServerHello`
 
@@ -561,7 +561,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## A Guardian cannot attach to a session; the Observed Agent is the only caller
+## A Guardian cannot attach to a session; the Observed Agent is the only caller [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §4.1: "Whether a Guardian can attach mid-flight to a session that started unguarded is undefined in v0.1"
 
@@ -569,7 +569,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Make the §5 hook table and the Hooks page say the same thing about decisions
+## Make the §5 hook table and the Hooks page say the same thing about decisions [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §5 Hook Taxonomy; `docs/spec/instrument/hooks.md` Overview table and each hook's **Decision** line
 
@@ -577,7 +577,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Tag natural-language inputs and displayed text with a language
+## Tag natural-language inputs and displayed text with a language [Technical]
 
 **Where:** `steps/userMessage` and `steps/agentResponse` content parts (`value` with `type: text`); `Intent.raw` on `sessionStart` / `agentTrigger`; `toolCallRequest` natural-language framing; retrieval, memory, and compaction summary text; response `reasoning` ([`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json)); ASK `question`, `context`, and `options` ([`ask-details.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/ask-details.json))
 
@@ -585,7 +585,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Let a DENY omit reasoning when the policy must stay confidential
+## Let a DENY omit reasoning when the policy must stay confidential [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §6, DENY required fields; [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) (`reasoning` required when `decision` is `deny`, and also when it is `modify`, `ask`, or `defer`)
 
@@ -593,7 +593,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Say what the Observed Agent does with a DEFER
+## Say what the Observed Agent does with a DEFER [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §6 (DEFER "pauses the step until it resolves") and §9.2; [`defer-details.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/defer-details.json)
 
@@ -601,7 +601,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Move the decision-failure rule out of "Honoring decisions" and finish it
+## Move the decision-failure rule out of "Honoring decisions" and finish it [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §6.4 ("A step suffers a decision failure when no usable decision arrives"); the one-off receiver rules that sit beside it (§6.3 illegal `modifications`, §6.5 a `MODIFY` the client cannot apply, §17.1 recovery column)
 
@@ -609,7 +609,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Say which postCompact field a MODIFY rewrites, and what the agent does with it
+## Say which postCompact field a MODIFY rewrites, and what the agent does with it [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §6.5, the `postCompact` exception; `docs/spec/instrument/hooks.md` `postCompact`; [`hooks/post-compact.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/hooks/post-compact.json); [`modifications.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/modifications.json)
 
@@ -617,7 +617,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Schematize the SessionContext container as an extensible object
+## Schematize the SessionContext container as an extensible object [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §8, the paragraph after the SessionContext member list
 
@@ -625,7 +625,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Stop §10 from citing itself for the signed input
+## Stop §10 from citing itself for the signed input [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §10 opening sentence ("A signature over the §10 canonical input"); §10.2 ("the canonical input defined in §10")
 
@@ -633,7 +633,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Cite composite ML-DSA for hybrid signatures instead of defining the encoding
+## Cite composite ML-DSA for hybrid signatures instead of defining the encoding [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §10.2; the hybrid rows in the §10.1 registry (`ML-DSA-65+ECDSA-P256`, `ML-DSA-65+RSA-PSS-SHA256`); the same encoding copied into [`request-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/request-envelope.json) `Signature.algorithm`
 
@@ -641,7 +641,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Give the §10.3 opener a verb
+## Give the §10.3 opener a verb [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §10.3, the first sentence
 
@@ -649,7 +649,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Tighten the recommended clock-skew window
+## Tighten the recommended clock-skew window [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §10.3 (`skew_window_ms`, RECOMMENDED default 300000); [`handshake.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/handshake.json) `ServerHello.skew_window_ms` (`default: 300000`)
 
@@ -657,7 +657,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## State platform portability as a design goal, not a 2119 MUST
+## State platform portability as a design goal, not a 2119 MUST [Editorial]
 
 **Where:** `docs/spec/instrument/specification.md` §11, the opening sentence ("ACS MUST be deployable across IDE, SaaS, on-prem on Linux/Windows/macOS/mobile/browser.")
 
@@ -665,7 +665,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Drop the requirement that every resource identifier is a URI
+## Drop the requirement that every resource identifier is a URI [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §11 ("Resource identifiers MUST use URI form"); the `resource` string on Intent capability tuples (`session-start.json`, `agent-trigger.json`, `subagent-start.json`, `ask-details.json`); the worked example in `docs/topics/ACS_in_action_example.md` (`email.send` with `resource: "manager@example.com"`)
 
@@ -673,7 +673,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## The agent-layer prompt treats all input as data
+## The agent-layer prompt treats all input as data [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §12.2 ("Prompt MUST treat untrusted data as data, not instructions. Untrusted fields MUST be wrapped/quoted."); the §7.2 default that marks `user_input` and `system` trusted
 
@@ -681,7 +681,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Justify why the agent layer must not see policy code, or drop the rule
+## Justify why the agent layer must not see policy code, or drop the rule [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §12.2 ("MUST NOT have access to deterministic-layer policy code"); the same claim in §2 (the diagram sees "no policy code") and `README.md` ("that LLM never reads the policy source")
 
@@ -689,7 +689,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Use the JSON-RPC id as the step identifier
+## Use the JSON-RPC id as the step identifier [Technical]
 
 **Where:** [`request-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/request-envelope.json) (`id` is a string or number; `params.request_id` is a separate UUID); [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) (echoed `id`, plus `result.request_id`); `docs/spec/instrument/specification.md` §10.3 (replay keys on `request_id`); [`context-entry.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/context-entry.json) (`request_hash` hashes `params`; `step_id` should equal `request_id`)
 
@@ -697,7 +697,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Give system/ping its own response subschema
+## Give system/ping its own response subschema [Technical]
 
 **Where:** [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) `result` `oneOf` (`AcsResult` or `ServerHello` only) and `AcsResult.payload` (an object with no properties; the description says `system/ping` returns `{ status, echo, server_timestamp }`); `docs/spec/instrument/specification.md` §13, the Response paragraph; [`hooks/system-ping.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/hooks/system-ping.json) (request `echo` only)
 
@@ -705,7 +705,7 @@ The negotiation still does not do anything. `handshake/hello` is already a reque
 
 ---
 
-## Ship an OPA/Rego binding in v0.1, or stop calling it the starting reference
+## Ship an OPA/Rego binding in v0.1, or stop calling it the starting reference [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §12.1 (OPA/Rego as "v0.1 starting reference"; the conventions sentence naming bundle layout and a baseline policy bundle) and §16 (v0.2 highlight "Cedar binding")
 
@@ -717,7 +717,7 @@ The one-sentence interface is not that binding. It names the inputs, the request
 
 ---
 
-## Make the §17.1 error object agree in the prose, the table, and the schema
+## Make the §17.1 error object agree in the prose, the table, and the schema [Technical]
 
 **Where:** `docs/spec/instrument/specification.md` §17.1 (the opening paragraph and the registry table); [`response-envelope.json`](https://genai-security-project.github.io/agent-control-standard/schema/v0.1.0/response-envelope.json) `$defs/JsonRpcError`
 
